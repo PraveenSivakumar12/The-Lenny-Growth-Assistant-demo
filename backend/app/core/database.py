@@ -24,11 +24,13 @@ def _async_database_url(url: str) -> str:
 
 def _sync_database_url(url: str) -> str:
     if url.startswith("postgres://"):
-        return "postgresql://" + url[len("postgres://"):]
+        return "postgresql+psycopg2://" + url[len("postgres://"):]
     if url.startswith("postgresql+asyncpg://"):
-        return "postgresql://" + url[len("postgresql+asyncpg://"):]
+        return "postgresql+psycopg2://" + url[len("postgresql+asyncpg://"):]
     if url.startswith("postgresql+psycopg://"):
-        return "postgresql://" + url[len("postgresql+psycopg://"):]
+        return "postgresql+psycopg2://" + url[len("postgresql+psycopg://"):]
+    if url.startswith("postgresql://"):
+        return "postgresql+psycopg2://" + url[len("postgresql://"):]
     return url
 
 

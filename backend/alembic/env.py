@@ -8,7 +8,7 @@ import sys
 # Ensure backend directory is in python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from app.core.config import settings
+from app.core.database import SYNC_DATABASE_URL
 from app.models.db_models import Base
 
 # this is the Alembic Config object, which provides
@@ -20,13 +20,8 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Use the explicitly configured sync URL or derive one from Railway DATABASE_URL.
-sync_url = settings.SYNC_DATABASE_URL or settings.DATABASE_URL
-if sync_url.startswith("postgres://"):
-    sync_url = "postgresql://" + sync_url[len("postgres://"):]
-elif sync_url.startswith("postgresql+asyncpg://"):
-    sync_url = "postgresql://" + sync_url[len("postgresql+asyncpg://"):]
-config.set_main_option("sqlalchemy.url", sync_url.replace("%", "%%"))
+# Use the centralized normalized sync URL (supports sqlite and postgresql+psycopg2://).
+config.set_main_option("sqlalchemy.url", SYNC_DATABASE_URL.replace("%", "%%"))
 
 target_metadata = Base.metadata
 
