@@ -171,13 +171,26 @@ class AgentOrchestrator:
                     max_tokens=1500
                 )
                 assistant_text = response.content
+            except ValueError as e:
+                # Provider not configured (e.g. missing API key)
+                logger.warning(f"Provider configuration error ({self.provider.provider_name}): {e}")
+                assistant_text = (
+                    f"⚠️ **Provider not configured:** {self.provider.provider_name.upper()} requires an API key or is not available in this environment.\n\n"
+                    f"**To fix this:**\n"
+                    f"- If you are on **Railway**, set `OPENAI_API_KEY` (or `ANTHROPIC_API_KEY`) in your Railway service Variables tab, then redeploy.\n"
+                    f"- If you are running **locally**, start Ollama (`ollama serve`) or add your API key to the `.env` file.\n"
+                    f"- Then switch the model provider using the selector in the top-right corner.\n\n"
+                    f"The relevant transcript passages were retrieved and are shown as citations below."
+                )
             except Exception as e:
                 logger.error(f"Error during LLM chat completion ({self.provider.provider_name}): {e}")
                 assistant_text = (
-                    "I retrieved relevant transcript passages, but the selected model provider is "
-                    "currently unavailable, so I couldn't safely synthesize a grounded answer. "
-                    "Please retry when the provider is available. The retrieved source citations are "
-                    "included below for manual review."
+                    f"⚠️ **Model generation failed** (`{self.provider.provider_name}`).\n\n"
+                    f"The transcript context was retrieved successfully (see citations below), but the AI model could not produce a response right now.\n\n"
+                    f"**Common causes on Railway:**\n"
+                    f"- Ollama is a local-only service — it won't run on Railway. Switch to **OpenAI** or **Anthropic** in the model selector.\n"
+                    f"- `OPENAI_API_KEY` is missing in Railway Variables. Add it in the Railway dashboard → Service → Variables → redeploy.\n\n"
+                    f"Try selecting **OpenAI GPT-4o Mini** from the model dropdown above and resend your question."
                 )
 
             return assistant_text, citations, None

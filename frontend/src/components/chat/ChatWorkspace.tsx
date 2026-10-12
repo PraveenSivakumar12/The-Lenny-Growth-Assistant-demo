@@ -101,10 +101,10 @@ export const ChatWorkspace: React.FC<ChatWorkspaceProps> = ({
           {/* User Profile Avatar (from reference screenshot) */}
           <div className="relative group cursor-pointer">
             <img
-              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=faces"
+              src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=100&h=100&fit=crop&crop=faces"
               alt="User profile"
               className="w-8 h-8 rounded-full object-cover ring-2 ring-violet-400/50 shadow-sm"
-              title="Sarah (Logged In)"
+              title="User (Logged In)"
             />
           </div>
         </div>

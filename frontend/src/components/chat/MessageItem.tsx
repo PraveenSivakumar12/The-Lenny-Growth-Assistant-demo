@@ -35,8 +35,8 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
           </div>
         ) : (
           <img
-            src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=faces"
-            alt="Sarah"
+            src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=100&h=100&fit=crop&crop=faces"
+            alt="User"
             className="w-8 h-8 rounded-xl object-cover ring-1 ring-slate-300"
           />
         )}
@@ -47,7 +47,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
         <div className="flex items-center justify-between mb-1.5">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-slate-800">
-              {isAssistant ? 'TaskFlow AI' : 'Sarah'}
+              {isAssistant ? 'TaskFlow AI' : 'You'}
             </span>
             {isAssistant && message.model_used && (
               <span className="text-[10px] text-violet-700 bg-violet-50 px-2 py-0.5 rounded-full font-medium">
