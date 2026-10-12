@@ -1,0 +1,39 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.venv/
+venv/
+backend/venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# JavaScript build/dependencies
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Runtime data and logs (generated knowledge files are not committed)
+*.log
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+backend/data/*.db
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Lenny's Data is fetched for local/runtime use; do not redistribute raw transcripts or chunk text.
+data/transcripts/*
+!data/transcripts/.gitkeep
+data/index/*
+!data/index/.gitkeep

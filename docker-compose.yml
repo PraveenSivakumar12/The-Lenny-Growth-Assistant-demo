@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: lenny_growth
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d lenny_growth"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: production
+      DEBUG: "false"
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/lenny_growth
+      DEFAULT_LLM_PROVIDER: ${DEFAULT_LLM_PROVIDER:-ollama}
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-3-5-sonnet-20241022}
+      TRANSCRIPTS_DATA_DIR: /app/data/transcripts
+      VECTOR_INDEX_DIR: /app/data/index
+    volumes:
+      - knowledge_data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  knowledge_data:
