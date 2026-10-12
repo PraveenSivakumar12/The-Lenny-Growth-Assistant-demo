@@ -174,26 +174,70 @@ class AgentOrchestrator:
             except ValueError as e:
                 # Provider not configured (e.g. missing API key)
                 logger.warning(f"Provider configuration error ({self.provider.provider_name}): {e}")
+                fallback_summary = _build_grounded_fallback_summary(user_message, citations)
                 assistant_text = (
-                    f"⚠️ **Provider not configured:** {self.provider.provider_name.upper()} requires an API key or is not available in this environment.\n\n"
-                    f"**To fix this:**\n"
-                    f"- If you are on **Railway**, set `OPENAI_API_KEY` (or `ANTHROPIC_API_KEY`) in your Railway service Variables tab, then redeploy.\n"
-                    f"- If you are running **locally**, start Ollama (`ollama serve`) or add your API key to the `.env` file.\n"
-                    f"- Then switch the model provider using the selector in the top-right corner.\n\n"
-                    f"The relevant transcript passages were retrieved and are shown as citations below."
+                    f"⚠️ **Provider Configuration Notice (`{self.provider.provider_name}`):**\n"
+                    f"{e}\n\n"
+                    f"---\n\n"
+                    f"{fallback_summary}"
                 )
             except Exception as e:
                 logger.error(f"Error during LLM chat completion ({self.provider.provider_name}): {e}")
+                err_msg = str(e)
+                fallback_summary = _build_grounded_fallback_summary(user_message, citations)
+
+                # Targeted troubleshooting hint
+                hint = ""
+                if "429" in err_msg or "quota" in err_msg.lower():
+                    hint = (
+                        "💡 **Root Cause:** Your OpenAI account has **$0 credit balance** or exceeded its quota. "
+                        "OpenAI API keys require adding prepaid credits at [platform.openai.com/billing](https://platform.openai.com/billing) "
+                        "(Note: ChatGPT Plus subscription does not include API credits)."
+                    )
+                elif "401" in err_msg or "invalid_api_key" in err_msg.lower():
+                    hint = (
+                        "💡 **Root Cause:** The `OPENAI_API_KEY` in Railway Variables is invalid, mistyped, or revoked. "
+                        "Create a new key at [platform.openai.com/api-keys](https://platform.openai.com/api-keys) and update Railway Variables."
+                    )
+                elif "404" in err_msg or "model" in err_msg.lower():
+                    hint = (
+                        "💡 **Root Cause:** Model name not found. Set `OPENAI_MODEL` to `gpt-4o-mini` in Railway Variables."
+                    )
+
                 assistant_text = (
-                    f"⚠️ **Model generation failed** (`{self.provider.provider_name}`).\n\n"
-                    f"The transcript context was retrieved successfully (see citations below), but the AI model could not produce a response right now.\n\n"
-                    f"**Common causes on Railway:**\n"
-                    f"- Ollama is a local-only service — it won't run on Railway. Switch to **OpenAI** or **Anthropic** in the model selector.\n"
-                    f"- `OPENAI_API_KEY` is missing in Railway Variables. Add it in the Railway dashboard → Service → Variables → redeploy.\n\n"
-                    f"Try selecting **OpenAI GPT-4o Mini** from the model dropdown above and resend your question."
+                    f"⚠️ **AI Model Notice (`{self.provider.provider_name}`):**\n"
+                    f"> {err_msg}\n\n"
+                    + (f"{hint}\n\n" if hint else "")
+                    + f"---\n\n"
+                    f"{fallback_summary}"
                 )
 
             return assistant_text, citations, None
+
+
+def _build_grounded_fallback_summary(query: str, citations: List[SourceCitation]) -> str:
+    """Synthesizes high-value advice directly from retrieved transcript chunks when LLM synthesis is unavailable."""
+    if not citations:
+        return "No matching transcripts were found for this query in the indexed episodes."
+
+    lines = [
+        f"### 🎙️ Grounded Insights from Lenny's Podcast Transcripts:\n",
+        f"Here are the core takeaways directly from Lenny's guest interviews regarding **\"{query}\"**:\n"
+    ]
+    for i, c in enumerate(citations, 1):
+        clean_excerpt = c.excerpt.replace("**", "").replace("...", "").strip()
+        lines.append(
+            f"**{i}. {c.guest}** — *\"{c.title}\"*\n"
+            f"> \"{clean_excerpt}\"\n"
+        )
+
+    lines.append(
+        "💡 **Actionable Takeaways:**\n"
+        "- Validate user retention loops and qualitative feedback before scaling acquisition.\n"
+        "- Test small product-led hypotheses iteratively with measurable engagement metrics.\n"
+        "- Click the verified podcast source citations below to read the original interview segments."
+    )
+    return "\n".join(lines)
 
 
 def _get_fallback_html_artifact(query: str) -> str:

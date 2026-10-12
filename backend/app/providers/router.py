@@ -81,12 +81,29 @@ class ProviderRouter:
         return models
 
 
+    async def resolve_provider(self, requested_name: Optional[str] = None) -> BaseLLMProvider:
+        """Returns the requested provider, or auto-fallbacks to the first available cloud/local provider."""
+        provider = self.get_provider(requested_name)
+        if not await provider.is_available():
+            if await self.openai.is_available():
+                logger.info(f"Requested provider '{provider.provider_name}' is unavailable. Auto-routing to OpenAI.")
+                return self.openai
+            if await self.anthropic.is_available():
+                logger.info(f"Requested provider '{provider.provider_name}' is unavailable. Auto-routing to Anthropic.")
+                return self.anthropic
+        return provider
+
+
 # Global singleton router
 router_instance = ProviderRouter()
 
 
 def get_provider(name: Optional[str] = None) -> BaseLLMProvider:
     return router_instance.get_provider(name)
+
+
+async def resolve_provider(name: Optional[str] = None) -> BaseLLMProvider:
+    return await router_instance.resolve_provider(name)
 
 
 async def get_provider_status() -> Dict[str, bool]:

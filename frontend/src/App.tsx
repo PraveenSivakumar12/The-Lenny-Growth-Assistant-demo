@@ -57,7 +57,18 @@ export const App: React.FC = () => {
       const [h, m] = await Promise.all([fetchHealth(), fetchModels()]);
       setHealth(h);
       setModels(m);
-      if (h.active_provider) setActiveProviderState(h.active_provider);
+
+      const activeIsAvailable = m.some((mod) => mod.provider === h.active_provider && mod.is_available);
+      if (h.active_provider && activeIsAvailable) {
+        setActiveProviderState(h.active_provider);
+      } else {
+        const firstAvailable = m.find((mod) => mod.is_available);
+        if (firstAvailable) {
+          setActiveProviderState(firstAvailable.provider);
+        } else if (h.active_provider) {
+          setActiveProviderState(h.active_provider);
+        }
+      }
     } catch (err) {
       console.warn('Initial status fetch error:', err);
     }

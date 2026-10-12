@@ -13,7 +13,7 @@ from app.core.database import get_db
 from app.core.logging import logger, log_event
 from app.models.db_models import Conversation, Message, Artifact
 from app.models.schemas import ChatRequest, ChatResponse, SourceCitation, ArtifactResponse
-from app.providers.router import get_provider
+from app.providers.router import get_provider, resolve_provider
 from app.agent.runner import AgentOrchestrator
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
@@ -70,7 +70,7 @@ async def send_chat_message(
     await db.refresh(user_msg)
 
     # 4. Resolve Model Provider & Execute Agent Turn
-    provider = get_provider(payload.provider)
+    provider = await resolve_provider(payload.provider)
     orchestrator = AgentOrchestrator(provider=provider, model=payload.model)
 
     assistant_text, citations, artifact_data = await orchestrator.execute_turn(

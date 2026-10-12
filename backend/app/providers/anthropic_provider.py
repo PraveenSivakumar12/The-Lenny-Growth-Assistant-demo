@@ -12,8 +12,13 @@ from app.providers.base import BaseLLMProvider, LLMResponse
 
 class AnthropicProvider(BaseLLMProvider):
     def __init__(self, api_key: Optional[str] = None, default_model: Optional[str] = None):
-        self.api_key = api_key or settings.ANTHROPIC_API_KEY
-        self._default_model = default_model or settings.ANTHROPIC_MODEL
+        self._explicit_api_key = api_key
+        self._explicit_default_model = default_model
+
+    @property
+    def api_key(self) -> str:
+        raw = self._explicit_api_key or settings.ANTHROPIC_API_KEY or ""
+        return raw.strip().strip("'\"")
 
     @property
     def provider_name(self) -> str:
@@ -21,10 +26,12 @@ class AnthropicProvider(BaseLLMProvider):
 
     @property
     def default_model(self) -> str:
-        return self._default_model
+        raw = (self._explicit_default_model or settings.ANTHROPIC_MODEL or "claude-3-5-sonnet-20241022").strip().strip("'\"")
+        return raw or "claude-3-5-sonnet-20241022"
 
     async def is_available(self) -> bool:
-        return bool(self.api_key and len(self.api_key.strip()) > 10)
+        key = self.api_key
+        return bool(key and len(key) > 10)
 
     async def generate_response(
         self,
@@ -34,12 +41,13 @@ class AnthropicProvider(BaseLLMProvider):
         temperature: float = 0.7,
         max_tokens: int = 2048,
     ) -> LLMResponse:
-        if not await self.is_available():
+        key = self.api_key
+        if not key or len(key) <= 10:
             raise ValueError(
-                "Anthropic API key is missing or invalid. Please configure ANTHROPIC_API_KEY in your .env file."
+                "Anthropic API key is missing or invalid. Please configure ANTHROPIC_API_KEY in your Railway Variables or .env file."
             )
 
-        target_model = model or self._default_model
+        target_model = (model or self.default_model).strip().strip("'\"")
         endpoint = "https://api.anthropic.com/v1/messages"
 
         # In Anthropic API, system prompt is passed as a top-level argument

@@ -12,8 +12,14 @@ from app.providers.base import BaseLLMProvider, LLMResponse
 
 class OpenAIProvider(BaseLLMProvider):
     def __init__(self, api_key: Optional[str] = None, default_model: Optional[str] = None):
-        self.api_key = api_key or settings.OPENAI_API_KEY
-        self._default_model = default_model or settings.OPENAI_MODEL
+        self._explicit_api_key = api_key
+        self._explicit_default_model = default_model
+
+    @property
+    def api_key(self) -> str:
+        raw = self._explicit_api_key or settings.OPENAI_API_KEY or ""
+        # Strip whitespace, quotes, and newlines that can happen when pasting into Railway variables
+        return raw.strip().strip("'\"")
 
     @property
     def provider_name(self) -> str:
@@ -21,10 +27,14 @@ class OpenAIProvider(BaseLLMProvider):
 
     @property
     def default_model(self) -> str:
-        return self._default_model
+        raw = (self._explicit_default_model or settings.OPENAI_MODEL or "gpt-4o-mini").strip().strip("'\"")
+        if raw.startswith("openai-"):
+            raw = raw[len("openai-"):]
+        return raw or "gpt-4o-mini"
 
     async def is_available(self) -> bool:
-        return bool(self.api_key and len(self.api_key.strip()) > 10)
+        key = self.api_key
+        return bool(key and len(key) > 10)
 
     async def generate_response(
         self,
@@ -34,12 +44,19 @@ class OpenAIProvider(BaseLLMProvider):
         temperature: float = 0.7,
         max_tokens: int = 2048,
     ) -> LLMResponse:
-        if not await self.is_available():
+        key = self.api_key
+        if not key or len(key) <= 10:
             raise ValueError(
-                "OpenAI API key is missing or invalid. Please configure OPENAI_API_KEY in your .env file."
+                "OpenAI API key is missing or invalid. Please configure OPENAI_API_KEY in your Railway Variables or .env file."
             )
 
-        target_model = model or self._default_model
+        # Clean target model
+        target_model = (model or self.default_model).strip().strip("'\"")
+        if target_model.startswith("openai-"):
+            target_model = target_model[len("openai-"):]
+        if not target_model:
+            target_model = "gpt-4o-mini"
+
         endpoint = "https://api.openai.com/v1/chat/completions"
 
         formatted_messages = [{"role": "system", "content": system_prompt}]
@@ -47,7 +64,7 @@ class OpenAIProvider(BaseLLMProvider):
             formatted_messages.append({"role": m["role"], "content": m["content"]})
 
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "Authorization": f"Bearer {key}",
             "Content-Type": "application/json"
         }
 
@@ -65,8 +82,16 @@ class OpenAIProvider(BaseLLMProvider):
 
                 if res.status_code != 200:
                     err_body = res.text
-                    logger.error(f"OpenAI error {res.status_code}: {err_body}")
-                    raise RuntimeError(f"OpenAI API error ({res.status_code}): {err_body}")
+                    err_message = err_body
+                    try:
+                        err_json = res.json()
+                        if "error" in err_json and isinstance(err_json["error"], dict):
+                            err_message = err_json["error"].get("message", err_body)
+                    except Exception:
+                        pass
+
+                    logger.error(f"OpenAI error {res.status_code}: {err_message}")
+                    raise RuntimeError(f"OpenAI API error ({res.status_code}): {err_message}")
 
                 data = res.json()
                 choice = data["choices"][0]
