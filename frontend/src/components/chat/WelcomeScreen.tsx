@@ -1,84 +1,158 @@
-import React from 'react';
-import { Sparkles, TrendingUp, Compass, FileText, Layout } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  ArrowUp,
+  Plus,
+  ArrowDown,
+  Workflow,
+  Cpu,
+  BarChart2,
+  Lightbulb,
+  CalendarCheck,
+} from 'lucide-react';
 
 interface WelcomeScreenProps {
   onSelectPrompt: (prompt: string) => void;
+  userName?: string;
 }
 
-export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSelectPrompt }) => {
-  const examplePrompts = [
+export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
+  onSelectPrompt,
+  userName = 'Sarah',
+}) => {
+  const [inputVal, setInputVal] = useState('');
+
+  const quickActions = [
     {
-      title: 'B2B Growth & AI Loops',
-      description: 'How does Elena Verna reinvent growth loops for AI-native products at Lovable?',
-      icon: TrendingUp,
-      prompt: 'How does Elena Verna reinvent growth loops for AI-native companies, and what is her playbook on Lovable reaching $200M ARR?',
-      color: 'text-violet-600 bg-violet-50',
+      label: 'Create AI Flow',
+      icon: Workflow,
+      prompt: 'Design an end-to-end B2B PLG growth loop and automated onboarding flow based on Lenny’s podcast transcripts.',
     },
     {
-      title: 'Product-Market Fit & Strategy',
-      description: 'What are the counter-intuitive signals of true PMF according to Marc Andreessen and Peter Sellis?',
-      icon: Compass,
-      prompt: 'What are the counter-intuitive signs of true Product-Market Fit according to Marc Andreessen and Peter Sellis in their podcast interviews?',
-      color: 'text-blue-600 bg-blue-50',
+      label: 'Build Automation',
+      icon: Cpu,
+      prompt: 'How can we automate product retention analysis and churn alert loops for our SaaS tier?',
     },
     {
-      title: 'Ship 30 for 30 Essay',
-      description: 'Generate an executive Atomic Essay (~1,250 words) on why retention eats acquisition.',
-      icon: FileText,
-      prompt: 'Write a Ship 30 for 30 essay on why retention eats acquisition in modern SaaS, grounded in Lenny’s podcast transcripts.',
-      color: 'text-amber-600 bg-amber-50',
+      label: 'Analyze Process',
+      icon: BarChart2,
+      prompt: 'Analyze Elena Verna’s acquisition loops vs Lovable’s viral loops and explain key metrics.',
     },
     {
-      title: 'Interactive Webpage Artifact',
-      description: 'Generate an interactive HTML/CSS viral coefficient and growth loop calculator.',
-      icon: Layout,
-      prompt: 'Generate an interactive HTML/CSS webpage component with a modern calculator for calculating viral factor (K) and SaaS retention cohorts.',
-      color: 'text-emerald-600 bg-emerald-50',
+      label: 'Get AI Suggestion',
+      icon: Lightbulb,
+      prompt: 'What are the top 3 counter-intuitive product growth principles shared across Lenny’s podcast guests?',
+    },
+    {
+      label: 'AI Task Planner',
+      icon: CalendarCheck,
+      prompt: 'Write an executive Ship 30 for 30 essay outline and execution plan for launching product-led sales.',
     },
   ];
 
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (inputVal.trim()) {
+      onSelectPrompt(inputVal.trim());
+      setInputVal('');
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-6 max-w-3xl mx-auto text-center">
-      <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-500 text-white flex items-center justify-center shadow-lg mb-4">
-        <Sparkles className="w-6 h-6" />
+    <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-8 py-8 w-full max-w-4xl mx-auto text-center select-none">
+      {/* 1. Glowing Gradient Orb (Matches TaskFlow AI reference) */}
+      <div className="relative mb-6">
+        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-violet-600 via-fuchsia-400 to-indigo-300 shadow-[0_0_50px_rgba(168,85,247,0.45)] flex items-center justify-center p-1 transition-transform hover:scale-105 duration-300">
+          <div className="w-full h-full rounded-full bg-gradient-to-br from-white/30 via-violet-300/20 to-transparent backdrop-blur-sm flex items-center justify-center border border-white/40">
+            <div className="w-8 h-8 rounded-full bg-white/40 blur-xs"></div>
+          </div>
+        </div>
       </div>
 
-      <h2 className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight mb-2">
-        The Lenny Growth Assistant
+      {/* 2. Welcome Headline */}
+      <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight mb-2">
+        Good Evening, {userName}
+      </h1>
+      <h2 className="text-base sm:text-lg font-semibold text-slate-700 mb-1">
+        Master your day with AI automation
       </h2>
-      <p className="text-xs sm:text-sm text-slate-500 max-w-lg mb-8 leading-relaxed">
-        Grounded in 50+ transcripts from Lenny’s Podcast. Ask tactical product questions,
-        generate Ship 30 for 30 essays, or build interactive web artifacts.
+      <p className="text-xs sm:text-sm text-slate-500 max-w-md mb-8">
+        Experience the next level of productivity. Let AI handle the busywork grounded in Lenny's Growth Intelligence.
       </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full text-left">
-        {examplePrompts.map((item, idx) => {
-          const Icon = item.icon;
-          return (
+      {/* 3. Hero Prompt Input Card (Exact Card Style as image) */}
+      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-slate-200/80 p-3 sm:p-4 mb-8 transition-all hover:shadow-[0_12px_40px_rgb(0,0,0,0.09)]">
+        <div className="text-left mb-3">
+          <input
+            type="text"
+            value={inputVal}
+            onChange={(e) => setInputVal(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Ask Anything"
+            className="w-full text-sm sm:text-base font-normal text-slate-800 placeholder-slate-400 outline-none bg-transparent px-1 py-1"
+          />
+        </div>
+
+        <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+          <div className="flex items-center gap-2 text-slate-400">
             <button
-              key={idx}
-              onClick={() => onSelectPrompt(item.prompt)}
-              className="p-3.5 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-xl shadow-sm hover:shadow transition-all group flex flex-col justify-between"
+              type="button"
+              onClick={() => onSelectPrompt('Generate an interactive HTML/CSS growth calculator component')}
+              className="p-1.5 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+              title="Add attachment / Prompt template"
             >
-              <div>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div className={`p-1.5 rounded-lg ${item.color}`}>
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <h3 className="text-xs font-semibold text-slate-800 group-hover:text-violet-600 transition-colors">
-                    {item.title}
-                  </h3>
-                </div>
-                <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
-                  {item.description}
-                </p>
-              </div>
-              <span className="text-[10px] text-violet-600 font-medium mt-3 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                Ask this →
-              </span>
+              <Plus className="w-4 h-4" />
             </button>
-          );
-        })}
+            <button
+              type="button"
+              onClick={() => onSelectPrompt('Write a Ship 30 for 30 essay on SaaS growth')}
+              className="p-1.5 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+              title="Insert prompt"
+            >
+              <ArrowDown className="w-4 h-4" />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => handleSubmit()}
+            disabled={!inputVal.trim()}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center text-white transition-all shadow-sm ${
+              inputVal.trim()
+                ? 'bg-violet-600 hover:bg-violet-700 scale-100 cursor-pointer'
+                : 'bg-violet-500/80 hover:bg-violet-600 cursor-pointer'
+            }`}
+            title="Submit question"
+          >
+            <ArrowUp className="w-4 h-4 stroke-[2.5]" />
+          </button>
+        </div>
+      </div>
+
+      {/* 4. Quick Action Pills (Exact layout from reference) */}
+      <div className="w-full max-w-2xl text-left">
+        <div className="text-xs font-bold text-slate-700 mb-3 px-1">Quick Action</div>
+        <div className="flex flex-wrap items-center gap-2">
+          {quickActions.map((action, idx) => {
+            const Icon = action.icon;
+            return (
+              <button
+                key={idx}
+                onClick={() => onSelectPrompt(action.prompt)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/90 hover:bg-white text-slate-700 hover:text-violet-700 border border-slate-200/80 hover:border-violet-300 rounded-xl text-xs font-medium shadow-2xs hover:shadow-sm transition-all"
+              >
+                <Icon className="w-3.5 h-3.5 text-slate-400 group-hover:text-violet-600" />
+                <span>{action.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

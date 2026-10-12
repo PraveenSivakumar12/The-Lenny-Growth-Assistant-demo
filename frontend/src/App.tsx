@@ -32,6 +32,7 @@ export const App: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [health, setHealth] = useState<HealthStatus | null>(null);
+  const [activeNavTab, setActiveNavTab] = useState<string>('dashboard');
 
   // Modals state
   const [renameModal, setRenameModal] = useState<{ isOpen: boolean; id: string; title: string }>({
@@ -98,10 +99,12 @@ export const App: React.FC = () => {
     setCurrentConversation(null);
     setActiveArtifact(null);
     setIsArtifactOpen(false);
+    setActiveNavTab('dashboard');
   };
 
   const handleSelectConversation = (id: string) => {
     setActiveConversationId(id);
+    setActiveNavTab('history');
   };
 
   const handleSendMessage = async (messageText: string) => {
@@ -183,8 +186,8 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-50">
-      {/* 1. Left Sidebar */}
+    <div className="flex h-screen w-screen overflow-hidden bg-[#EDF2FA]">
+      {/* 1. Left Sidebar (TaskFlow AI Navigation) */}
       <Sidebar
         conversations={conversations}
         activeConversationId={activeConversationId}
@@ -195,6 +198,13 @@ export const App: React.FC = () => {
         onNewChat={handleNewChat}
         onRenameConversation={openRenameModal}
         onDeleteConversation={openDeleteModal}
+        activeNavTab={activeNavTab}
+        onSelectNavTab={(tab) => {
+          setActiveNavTab(tab);
+          if (tab === 'dashboard') {
+            handleNewChat();
+          }
+        }}
       />
 
       {/* 2. Main Workspace */}

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, FileText, Code2 } from 'lucide-react';
+import { ArrowUp, Plus, ArrowDown, FileText, Code2 } from 'lucide-react';
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -13,7 +13,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isLoading }
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 180)}px`;
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 160)}px`;
     }
   }, [input]);
 
@@ -40,56 +40,81 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isLoading }
   };
 
   return (
-    <div className="border-t border-slate-200/80 bg-white p-3 sm:p-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Quick Action Suggestion Pills */}
+    <div className="p-3 sm:p-5 bg-gradient-to-t from-[#EDF2FA] to-transparent">
+      <div className="max-w-3xl mx-auto">
+        {/* Quick action prompts */}
         <div className="flex items-center gap-1.5 mb-2 overflow-x-auto pb-1 text-[11px] text-slate-500">
-          <span className="font-semibold text-slate-400 text-[10px] uppercase">Quick Skills:</span>
           <button
             type="button"
             onClick={() => handleInsertHelper('Write a Ship 30 for 30 essay on: ')}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200/80 text-slate-700 transition-colors"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 hover:bg-white text-slate-700 border border-slate-200/80 shadow-2xs hover:shadow-xs transition-all"
           >
-            <FileText className="w-3 h-3 text-amber-600" />
+            <FileText className="w-3 h-3 text-violet-600" />
             Ship 30 Essay
           </button>
           <button
             type="button"
             onClick={() => handleInsertHelper('Generate an interactive HTML/CSS UI component for: ')}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200/80 text-slate-700 transition-colors"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 hover:bg-white text-slate-700 border border-slate-200/80 shadow-2xs hover:shadow-xs transition-all"
           >
-            <Code2 className="w-3 h-3 text-emerald-600" />
-            HTML Webpage
+            <Code2 className="w-3 h-3 text-indigo-600" />
+            HTML Web Artifact
           </button>
         </div>
 
-        {/* Input Box */}
-        <form onSubmit={handleSubmit} className="relative flex items-end gap-2 bg-slate-50 border border-slate-200 focus-within:border-violet-500 focus-within:ring-1 focus-within:ring-violet-500 rounded-xl p-2 transition-all">
+        {/* Floating Rounded Card Input (TaskFlow Style) */}
+        <div className="bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-slate-200/90 p-2.5 sm:p-3 transition-all focus-within:shadow-[0_8px_30px_rgba(139,92,246,0.15)] focus-within:border-violet-300">
           <textarea
             ref={textareaRef}
             rows={1}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask a PM or growth question, or request a Ship 30 essay... (Enter to send, Shift+Enter for new line)"
+            placeholder="Ask Anything"
             disabled={isLoading}
-            className="w-full bg-transparent resize-none outline-none text-xs sm:text-sm text-slate-800 placeholder-slate-400 py-1 px-1.5 max-h-40 leading-relaxed disabled:opacity-50"
+            className="w-full bg-transparent resize-none outline-none text-xs sm:text-sm text-slate-800 placeholder-slate-400 py-1 px-2 max-h-36 leading-relaxed disabled:opacity-50"
           />
 
-          <button
-            type="submit"
-            disabled={!input.trim() || isLoading}
-            className="flex-shrink-0 p-2 rounded-lg bg-violet-600 hover:bg-violet-700 disabled:bg-slate-200 text-white disabled:text-slate-400 transition-colors shadow-sm focus:outline-none"
-            title="Send message"
-            aria-label="Send message"
-          >
-            {isLoading ? (
-              <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Send className="w-4 h-4" />
-            )}
-          </button>
-        </form>
+          <div className="flex items-center justify-between pt-1 border-t border-slate-100 mt-1">
+            <div className="flex items-center gap-1 text-slate-400">
+              <button
+                type="button"
+                onClick={() => handleInsertHelper('How does Elena Verna reinvent growth loops?')}
+                className="p-1.5 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                title="Prompt helper"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleInsertHelper('What are the counter-intuitive signals of PMF?')}
+                className="p-1.5 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                title="Insert prompt"
+              >
+                <ArrowDown className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleSubmit()}
+              disabled={!input.trim() || isLoading}
+              className={`w-8 h-8 rounded-xl flex items-center justify-center text-white transition-all shadow-sm ${
+                input.trim() && !isLoading
+                  ? 'bg-violet-600 hover:bg-violet-700 cursor-pointer'
+                  : 'bg-violet-400 cursor-not-allowed opacity-60'
+              }`}
+              title="Send message"
+              aria-label="Send message"
+            >
+              {isLoading ? (
+                <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+              ) : (
+                <ArrowUp className="w-4 h-4 stroke-[2.5]" />
+              )}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
