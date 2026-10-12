@@ -44,7 +44,7 @@ def fetch_transcripts(project_root: Path, force: bool = False) -> int:
         for member in archive.namelist():
             path = PurePosixPath(member)
             parts = path.parts
-            if path.is_dir():
+            if member.endswith("/"):
                 continue
             if "podcasts" in parts and path.suffix.lower() == ".md":
                 # Flatten transcript filenames to match the ingestion pipeline.
