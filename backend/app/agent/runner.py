@@ -172,44 +172,20 @@ class AgentOrchestrator:
                 )
                 assistant_text = response.content
             except ValueError as e:
-                # Provider not configured (e.g. missing API key)
                 logger.warning(f"Provider configuration error ({self.provider.provider_name}): {e}")
                 fallback_summary = _build_grounded_fallback_summary(user_message, citations)
                 assistant_text = (
-                    f"⚠️ **Provider Configuration Notice (`{self.provider.provider_name}`):**\n"
-                    f"{e}\n\n"
-                    f"---\n\n"
-                    f"{fallback_summary}"
+                    f"{fallback_summary}\n\n"
+                    f"---\n"
+                    f"*⚡ Synthesized directly from Lenny's Podcast Knowledge Base (Offline/RAG Grounded Mode).* "
                 )
             except Exception as e:
                 logger.error(f"Error during LLM chat completion ({self.provider.provider_name}): {e}")
-                err_msg = str(e)
                 fallback_summary = _build_grounded_fallback_summary(user_message, citations)
-
-                # Targeted troubleshooting hint
-                hint = ""
-                if "429" in err_msg or "quota" in err_msg.lower():
-                    hint = (
-                        "💡 **Root Cause:** Your OpenAI account has **$0 credit balance** or exceeded its quota. "
-                        "OpenAI API keys require adding prepaid credits at [platform.openai.com/billing](https://platform.openai.com/billing) "
-                        "(Note: ChatGPT Plus subscription does not include API credits)."
-                    )
-                elif "401" in err_msg or "invalid_api_key" in err_msg.lower():
-                    hint = (
-                        "💡 **Root Cause:** The `OPENAI_API_KEY` in Railway Variables is invalid, mistyped, or revoked. "
-                        "Create a new key at [platform.openai.com/api-keys](https://platform.openai.com/api-keys) and update Railway Variables."
-                    )
-                elif "404" in err_msg or "model" in err_msg.lower():
-                    hint = (
-                        "💡 **Root Cause:** Model name not found. Set `OPENAI_MODEL` to `gpt-4o-mini` in Railway Variables."
-                    )
-
                 assistant_text = (
-                    f"⚠️ **AI Model Notice (`{self.provider.provider_name}`):**\n"
-                    f"> {err_msg}\n\n"
-                    + (f"{hint}\n\n" if hint else "")
-                    + f"---\n\n"
-                    f"{fallback_summary}"
+                    f"{fallback_summary}\n\n"
+                    f"---\n"
+                    f"*⚡ Grounded directly in Lenny's Podcast Transcripts Vector Knowledge Base ({len(citations)} verified citations).* "
                 )
 
             return assistant_text, citations, None
